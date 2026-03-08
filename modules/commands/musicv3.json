@@ -6,7 +6,7 @@ const zlib = require("zlib");
 
 module.exports = {
   config: {
-    name: "music",
+    name: "song",
     aliases: ["yt", "ytmusic"],
     description: "Download music from YouTube by song name",
     usage: "{prefix}music <song name>",

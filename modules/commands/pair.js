@@ -1,119 +1,114 @@
 const axios = require("axios");
 const fs = require("fs-extra");
-const { loadImage, createCanvas } = require("canvas");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "pair",
     description: "Make a pair with someone in the group",
     usage: "",
-    credit: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭", // Credits same rakha hai
+    credit: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
     hasPrefix: true,
     permission: "PUBLIC",
     cooldown: 10,
     category: "GAMES"
   },
 
-  run: async function ({ api, message, Users, Threads }) {
+  run: async function ({ api, message }) {
     const { threadID, messageID, senderID } = message;
+    
+    // Cache folder setup
+    const cacheDir = path.join(__dirname, "cache");
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
-    // Cache paths
-    let pathImg = __dirname + `/cache/pair_${senderID}.png`;
-    let pathAvt1 = __dirname + `/cache/avt1_${senderID}.png`;
-    let pathAvt2 = __dirname + `/cache/avt2_${senderID}.png`;
+    let pathImg = path.join(cacheDir, `pair_${senderID}.png`);
+    let pathAvt1 = path.join(cacheDir, `avt1_${senderID}.png`);
+    let pathAvt2 = path.join(cacheDir, `avt2_${senderID}.png`);
 
     try {
-      if (!fs.existsSync(__dirname + "/cache")) fs.mkdirSync(__dirname + "/cache");
-
-      var id1 = senderID;
-      var name1 = await Users.getNameUser(id1);
-      var ThreadInfo = await api.getThreadInfo(threadID);
-      var all = ThreadInfo.userInfo;
-      
-      let gender1 = "";
-      for (let c of all) {
-        if (c.id == id1) gender1 = c.gender;
+      // 1. Check for Canvas
+      let canvas;
+      try {
+        canvas = require("canvas");
+      } catch (e) {
+        return api.sendMessage("❌ Error: 'canvas' install nahi hai. Render par 'canvas' package add karein.", threadID, messageID);
       }
+      const { loadImage, createCanvas } = canvas;
 
+      // 2. Get User & Partner Info (Fixed getNameUser error)
+      const threadInfo = await api.getThreadInfo(threadID);
+      const allUsers = threadInfo.userInfo;
       const botID = api.getCurrentUserID();
-      let ungvien = [];
 
-      // Gender logic same rakha hai
-      if (gender1 == "FEMALE") {
-        for (let u of all) {
-          if (u.gender == "MALE" && u.id !== id1 && u.id !== botID) ungvien.push(u.id);
-        }
-      } else if (gender1 == "MALE") {
-        for (let u of all) {
-          if (u.gender == "FEMALE" && u.id !== id1 && u.id !== botID) ungvien.push(u.id);
-        }
-      } else {
-        for (let u of all) {
-          if (u.id !== id1 && u.id !== botID) ungvien.push(u.id);
-        }
-      }
+      // Apna naam nikalna
+      const info1 = await api.getUserInfo(senderID);
+      const name1 = info1[senderID].name;
+      const gender1 = info1[senderID].gender; // 1 for Female, 2 for Male
 
-      if (ungvien.length == 0) return api.sendMessage("❌ Aapke liye koi partner nahi mila!", threadID, messageID);
-
-      var id2 = ungvien[Math.floor(Math.random() * ungvien.length)];
-      var name2 = await Users.getNameUser(id2);
+      // Partner dhoondna
+      let candidates = allUsers.filter(u => u.id !== senderID && u.id !== botID);
       
-      // Luck/Percentage logic
-      var rd1 = Math.floor(Math.random() * 100) + 1;
-      var cc = ["0", "-1", "99.99", "-99", "-100", "101", "0.01"];
-      var rd2 = cc[Math.floor(Math.random() * cc.length)];
-      var djtme = [rd1, rd1, rd1, rd1, rd1, rd2, rd1, rd1, rd1, rd1];
-      var tile = djtme[Math.floor(Math.random() * djtme.length)];
+      // Gender preference logic
+      let matchCandidates = candidates.filter(u => {
+          if (gender1 == 2) return u.gender == 1; // Male looking for Female
+          if (gender1 == 1) return u.gender == 2; // Female looking for Male
+          return true;
+      });
 
-      // Background Images
-      var background = [
+      if (matchCandidates.length == 0) matchCandidates = candidates;
+      
+      const id2 = matchCandidates[Math.floor(Math.random() * matchCandidates.length)].id;
+      const info2 = await api.getUserInfo(id2);
+      const name2 = info2[id2].name;
+
+      // 3. Random Match Percentage
+      const tile = Math.floor(Math.random() * 101);
+
+      // 4. Download Background & Avatars
+      const backgrounds = [
         "https://i.postimg.cc/Hncn7FzP/Picsart-24-07-14-02-01-33-567.jpg",
         "https://i.postimg.cc/tgts9cNG/Picsart-24-07-14-11-17-37-603.jpg",
         "https://i.postimg.cc/Qd8TqTdy/Picsart-24-07-13-22-50-27-001.jpg"
       ];
-      var rd = background[Math.floor(Math.random() * background.length)];
+      const rdBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 
-      // Avatars fetch karna
-      let getAvtmot = (await axios.get(`https://graph.facebook.com/${id1}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" })).data;
-      fs.writeFileSync(pathAvt1, Buffer.from(getAvtmot, "utf-8"));
+      const [resBg, resAvt1, resAvt2] = await Promise.all([
+        axios.get(rdBg, { responseType: "arraybuffer" }),
+        axios.get(`https://graph.facebook.com/${senderID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" }),
+        axios.get(`https://graph.facebook.com/${id2}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" })
+      ]);
 
-      let getAvthai = (await axios.get(`https://graph.facebook.com/${id2}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" })).data;
-      fs.writeFileSync(pathAvt2, Buffer.from(getAvthai, "utf-8"));
+      fs.writeFileSync(pathImg, Buffer.from(resBg.data));
+      fs.writeFileSync(pathAvt1, Buffer.from(resAvt1.data));
+      fs.writeFileSync(pathAvt2, Buffer.from(resAvt2.data));
 
-      let getbackground = (await axios.get(`${rd}`, { responseType: "arraybuffer" })).data;
-      fs.writeFileSync(pathImg, Buffer.from(getbackground, "utf-8"));
-
-      // Canvas Drawing
-      let baseImage = await loadImage(pathImg);
-      let baseAvt1 = await loadImage(pathAvt1);
-      let baseAvt2 = await loadImage(pathAvt2);
-      let canvas = createCanvas(baseImage.width, baseImage.height);
-      let ctx = canvas.getContext("2d");
+      // 5. Canvas Drawing
+      const img = await loadImage(pathImg);
+      const av1 = await loadImage(pathAvt1);
+      const av2 = await loadImage(pathAvt2);
       
-      ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
-      ctx.drawImage(baseAvt1, 100, 150, 300, 300);
-      ctx.drawImage(baseAvt2, 900, 150, 300, 300);
-      
-      const imageBuffer = canvas.toBuffer();
-      fs.writeFileSync(pathImg, imageBuffer);
+      const cvs = createCanvas(img.width, img.height);
+      const ctx = cvs.getContext("2d");
+      ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+      ctx.drawImage(av1, 100, 150, 300, 300);
+      ctx.drawImage(av2, 900, 150, 300, 300);
 
-      // Final Message
-      const bodyMsg = `‎‎🤍 ◁𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡▷ 🤍 \n\n𝑇ℎ𝑖𝑠 𝑙𝑖𝑛𝑒 𝑓𝑜𝑟 𝑦𝑜𝑢 ➤➤➤➤➤\n\n💞 »»\n『\n   🥲┼┼──🦋 𝐊ɪɴ 𝐋ᴀғᴢᴏɴ 𝐌ᴇ 𝐁ʏᴀɴ 𝐊ᴀʀᴜ      🥲┼┼──🍁                         𝐀ʜᴇᴍɪʏᴀᴛ 𝐓ᴇʀɪ  🥲┼┼──🦋°          𝐊ɪ 𝐁ɪɴ 𝐓ᴇʀᴇ 𝐍ᴀᴍᴜᴍ𝐊ɪɴ 𝐒ɪ 𝐋ᴀɢᴛɪ 𝐇ᴀ𝐢•||•●┼ᚐ🩵 ꯭←̟̽ __  ꯭←̟̽🩷💋┼──                                🥲┼┼──°   𝐙ɪɴᴅᴀɢɪ 𝐌ᴇʀɪ  』  ${name1} \n   😽𝑆𝑢𝑐𝑐𝑒𝑠𝑓𝑢𝑙𝑙𝑦 𝑤𝑖𝑡ℎ😽 ${name2}\n 𝓐𝒑𝒑 𝓓𝒐𝒏𝒐 𝓚𝒆 𝙂𝒖𝒏 💌 ${tile}%\n     𝓒𝓻𝓮𝓭𝓲𝓽𝓼 ➺➤ 𝙑𝓲𝓴𝓪𝑠 𝓡𝓪𝓳𝒑𝒖𝑡`;
+      fs.writeFileSync(pathImg, cvs.toBuffer());
+
+      // 6. Message Sending
+      const bodyMsg = `‎‎🤍 ◁𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡▷ 🤍 \n\nSuccessful with: ${name2}\nMatch: ${tile}%\nCredits: Vikas Rajput`;
 
       return api.sendMessage({
         body: bodyMsg,
         mentions: [{ tag: name2, id: id2 }],
         attachment: fs.createReadStream(pathImg)
       }, threadID, () => {
-        // Cleanup files after sending
-        if (fs.existsSync(pathImg)) fs.unlinkSync(pathImg);
-        if (fs.existsSync(pathAvt1)) fs.unlinkSync(pathAvt1);
-        if (fs.existsSync(pathAvt2)) fs.unlinkSync(pathAvt2);
+        [pathImg, pathAvt1, pathAvt2].forEach(p => { if(fs.existsSync(p)) fs.unlinkSync(p); });
       }, messageID);
 
-    } catch (e) {
-      console.log(e);
-      return api.sendMessage("❌ Kuch error aaya hai!", threadID, messageID);
+    } catch (err) {
+      console.error(err);
+      return api.sendMessage(`❌ Error: ${err.message}`, threadID, messageID);
     }
   }
 };

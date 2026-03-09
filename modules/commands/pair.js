@@ -15,9 +15,9 @@ module.exports = {
   },
 
   run: async function ({ api, message }) {
+    // Note: Maine yahan se Users aur Threads hata diya hai kyunki aapka bot inhe support nahi kar raha
     const { threadID, messageID, senderID } = message;
     
-    // Cache folder setup
     const cacheDir = path.join(__dirname, "cache");
     if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
@@ -26,45 +26,46 @@ module.exports = {
     let pathAvt2 = path.join(cacheDir, `avt2_${senderID}.png`);
 
     try {
-      // 1. Check for Canvas
+      // 1. Load Canvas
       let canvas;
       try {
         canvas = require("canvas");
       } catch (e) {
-        return api.sendMessage("❌ Error: 'canvas' install nahi hai. Render par 'canvas' package add karein.", threadID, messageID);
+        return api.sendMessage("❌ Error: Render par 'canvas' package nahi mila. package.json mein 'canvas' add karein.", threadID, messageID);
       }
       const { loadImage, createCanvas } = canvas;
 
-      // 2. Get User & Partner Info (Fixed getNameUser error)
-      const threadInfo = await api.getThreadInfo(threadID);
+      // 2. Fetch Info using API (Not Users object)
+      api.sendMessage("🔍 Matching wait...", threadID, (err, info) => {
+          setTimeout(() => api.unsendMessage(info.messageID), 3000);
+      }, messageID);
+
+      const [userData, threadInfo] = await Promise.all([
+        api.getUserInfo(senderID),
+        api.getThreadInfo(threadID)
+      ]);
+
+      const name1 = userData[senderID].name;
+      const gender1 = userData[senderID].gender; // 1 = Female, 2 = Male
       const allUsers = threadInfo.userInfo;
       const botID = api.getCurrentUserID();
 
-      // Apna naam nikalna
-      const info1 = await api.getUserInfo(senderID);
-      const name1 = info1[senderID].name;
-      const gender1 = info1[senderID].gender; // 1 for Female, 2 for Male
-
-      // Partner dhoondna
+      // 3. Find Partner
       let candidates = allUsers.filter(u => u.id !== senderID && u.id !== botID);
-      
-      // Gender preference logic
       let matchCandidates = candidates.filter(u => {
-          if (gender1 == 2) return u.gender == 1; // Male looking for Female
-          if (gender1 == 1) return u.gender == 2; // Female looking for Male
+          if (gender1 == 2) return u.gender == 1; 
+          if (gender1 == 1) return u.gender == 2;
           return true;
       });
 
       if (matchCandidates.length == 0) matchCandidates = candidates;
-      
       const id2 = matchCandidates[Math.floor(Math.random() * matchCandidates.length)].id;
-      const info2 = await api.getUserInfo(id2);
-      const name2 = info2[id2].name;
+      const partnerData = await api.getUserInfo(id2);
+      const name2 = partnerData[id2].name;
 
-      // 3. Random Match Percentage
       const tile = Math.floor(Math.random() * 101);
 
-      // 4. Download Background & Avatars
+      // 4. Download Assets
       const backgrounds = [
         "https://i.postimg.cc/Hncn7FzP/Picsart-24-07-14-02-01-33-567.jpg",
         "https://i.postimg.cc/tgts9cNG/Picsart-24-07-14-11-17-37-603.jpg",
@@ -82,7 +83,7 @@ module.exports = {
       fs.writeFileSync(pathAvt1, Buffer.from(resAvt1.data));
       fs.writeFileSync(pathAvt2, Buffer.from(resAvt2.data));
 
-      // 5. Canvas Drawing
+      // 5. Drawing
       const img = await loadImage(pathImg);
       const av1 = await loadImage(pathAvt1);
       const av2 = await loadImage(pathAvt2);
@@ -95,7 +96,7 @@ module.exports = {
 
       fs.writeFileSync(pathImg, cvs.toBuffer());
 
-      // 6. Message Sending
+      // 6. Send
       const bodyMsg = `‎‎🤍 ◁𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡▷ 🤍 \n\nSuccessful with: ${name2}\nMatch: ${tile}%\nCredits: Vikas Rajput`;
 
       return api.sendMessage({
@@ -107,8 +108,7 @@ module.exports = {
       }, messageID);
 
     } catch (err) {
-      console.error(err);
-      return api.sendMessage(`❌ Error: ${err.message}`, threadID, messageID);
+      return api.sendMessage(`❌ System Error: ${err.message}`, threadID, messageID);
     }
   }
 };

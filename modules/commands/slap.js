@@ -7,7 +7,7 @@ module.exports = {
     name: 'slap',
     aliases: ['hit', 'punch'],
     description: 'Slap another user with a gender-based GIF',
-    usage: 'slap [@mention]\n\n👩 Female users: Girl slaps boy\n👨 Male users: Boy slaps girl',
+    usage: 'slap @mention',
     credit: '𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭',
     hasPrefix: true,
     permission: 'PUBLIC',
@@ -15,16 +15,20 @@ module.exports = {
     category: 'FUN'
   },
 
-  run: async function({ api, message, args }) {
-    const { threadID, messageID, senderID, mentions } = message;
+  run: async function({ api, message, event }) {
+    // Universal handle: Kuch frameworks 'message' dete hain, kuch 'event'
+    const data = message || event;
+    const { threadID, messageID, senderID } = data;
+    
+    // Mentions ko extract karne ka naya tarika (Universal)
+    const mentions = data.mentions || (data.messageReply ? data.messageReply.mentions : {});
+    const mentionKeys = Object.keys(mentions);
 
     try {
       // 1. Check Mentions
-      const mentionKeys = Object.keys(mentions);
-      
       if (mentionKeys.length === 0) {
         return api.sendMessage(
-          `❌ Please kisi ko mention karein!\nUsage: slap @mention`,
+          `❌ Kisi ko mention toh karo!\nUsage: slap @mention`,
           threadID,
           messageID
         );
@@ -33,16 +37,12 @@ module.exports = {
       const targetID = mentionKeys[0];
       
       if (targetID === senderID) {
-        return api.sendMessage(
-          "🤔 Khud ko thappad maarna acchi baat nahi hai...",
-          threadID,
-          messageID
-        );
+        return api.sendMessage("🤔 Khud ko thappad maarna acchi baat nahi hai...", threadID, messageID);
       }
 
       api.setMessageReaction("⏳", messageID, () => {}, true);
 
-      // 2. Get User Info (No dependency on Users object)
+      // 2. Fetch Info
       const [senderInfoData, targetInfoData] = await Promise.all([
         api.getUserInfo(senderID),
         api.getUserInfo(targetID)
@@ -52,58 +52,42 @@ module.exports = {
       const targetName = targetInfoData[targetID].name;
       const senderGender = senderInfoData[senderID].gender;
 
-      // Determine gender for API (1 = Female, 2 = Male)
-      let genderType = 'male'; 
-      if (senderGender === 1 || senderGender === 'FEMALE') {
-        genderType = 'female';
-      }
+      let genderType = (senderGender === 1 || senderGender === 'FEMALE') ? 'female' : 'male';
 
-      // 3. API Setup
+      // 3. API Call
       const apiKey = 'apim_PHNPYM8mq_Mpav9ue8sGJ6MNPAEvKNKJ13Uq1YZGcX4';
-
       const response = await axios.post(
         'https://priyanshuapi.xyz/api/runner/slap-gif/fetch',
         { gender: genderType },
         {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
           responseType: 'arraybuffer',
           timeout: 20000
         }
       );
 
       // 4. File Handling
-      const tempDir = path.join(__dirname, 'cache');
-      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+      const cacheDir = path.join(__dirname, 'cache');
+      if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
       
-      const tempFilePath = path.join(tempDir, `slap_${senderID}.gif`);
+      const tempFilePath = path.join(cacheDir, `slap_${senderID}.gif`);
       fs.writeFileSync(tempFilePath, Buffer.from(response.data, 'utf-8'));
 
-      // 5. Messages
+      // 5. Send
       const slapMessages = [
-        `💥 ${senderName} slapped ${targetName}!`,
-        `👋 ${senderName} gave ${targetName} a good slap!`,
-        `😤 ${senderName} hit ${targetName} hard!`,
-        `🤜 SLAP! ${senderName} vs ${targetName}!`,
-        `💢 ${senderName} delivered a powerful slap to ${targetName}!`
+        `💥 ${senderName} ne ${targetName} ko jor ka thappad mara!`,
+        `👋 ${senderName} ne ${targetName} ki achi thukai kar di!`,
+        `😤 ${senderName} ne ${targetName} ko slap kar diya!`
       ];
       const randomMessage = slapMessages[Math.floor(Math.random() * slapMessages.length)];
 
-      // 6. Send Result
       await api.sendMessage({
           body: randomMessage,
           attachment: fs.createReadStream(tempFilePath),
-          mentions: [
-            { tag: senderName, id: senderID },
-            { tag: targetName, id: targetID }
-          ]
+          mentions: [{ tag: targetName, id: targetID }]
         },
         threadID,
-        () => {
-          if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-        },
+        () => { if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath); },
         messageID
       );
 

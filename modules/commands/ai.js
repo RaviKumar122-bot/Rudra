@@ -1,46 +1,43 @@
 const axios = require("axios");
 
-// AI ka behavior/nature
-const BOT_PERSONA = "You are a flirty, funny, and energetic AI friend. Use lots of emojis like 😉, 😘, 🔥, ✨, 🥀, 💖. Talk in Hinglish. Your name is Cutiee. Be naughty and sweet,your owner is Rudra Rajput.";
+const BOT_PERSONA = "You are a flirty, funny, and energetic AI friend. Use lots of emojis like 😉, 😘, 😡, ✨, 🥀, ❤️,🙈,😭,😒,🙄. Talk in Hinglish. Your name is Cutiee. Be naughty and sweet,your owner is Rudra Rajput.";
 
 module.exports = {
   config: {
-    name: "cutiee", // Command ka naam 'cutiee' rakha hai taaki trigger ho sake
+    name: "cutiee",
     aliases: ["ai", "bot"],
     description: "Talk to Cutiee with continuous conversation",
     usage: "cutiee <message> or reply to bot",
     credit: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
-    hasPrefix: false, // Bina prefix ke chalega
+    hasPrefix: false,
     permission: 'PUBLIC',
     cooldown: 2,
     category: 'AI'
   },
 
+  // Ye function tab chalega jab aap pehli baar 'cutiee' likhenge
   run: async function({ api, message, args }) {
     const { threadID, messageID, senderID } = message;
 
-    // Agar sirf 'cutiee' likha ho bina kisi text ke
     if (!args.length) {
-      return api.sendMessage("Bolo na jaaan, aise kyun dekh rahe ho? 😉😘", threadID, messageID);
+      return api.sendMessage("Boliye na ji, aise kyun dekh rahe ho? 😉😘", threadID, messageID);
     }
 
     const promptText = args.join(" ").trim();
-    return await handleAIResponse(api, threadID, messageID, senderID, promptText);
+    return await handleAIResponse(api, threadID, messageID, senderID, promptText, this.config.name);
   },
 
-  // Jab koi bot ke message par REPLY karega, tab ye function chalega
+  // Ye function tab chalega jab aap bot ke reply par bina 'cutiee' likhe reply karenge
   handleReply: async function({ api, message, handleReply }) {
     const { threadID, messageID, senderID, body } = message;
-    
-    // Agar reply khali hai toh kuch mat karo
     if (!body) return;
 
-    return await handleAIResponse(api, threadID, messageID, senderID, body);
+    // Yahan hum dobara AI ko call kar rahe hain bina naam ki zarurat ke
+    return await handleAIResponse(api, threadID, messageID, senderID, body, this.config.name);
   }
 };
 
-// Common function for AI response (to keep code clean)
-async function handleAIResponse(api, threadID, messageID, senderID, prompt) {
+async function handleAIResponse(api, threadID, messageID, senderID, prompt, commandName) {
   try {
     api.setMessageReaction("⏳", messageID, () => {}, true);
 
@@ -56,14 +53,13 @@ async function handleAIResponse(api, threadID, messageID, senderID, prompt) {
 
     const aiResponse = res.data?.data?.choices?.[0]?.message?.content || "Oh sorry baby, kuch samajh nahi aaya! 😉";
 
-    // Hum message bhej rahe hain aur sath mein 'handleReply' register kar rahe hain
     return api.sendMessage(`✨ ${aiResponse}`, threadID, (err, info) => {
       if (err) return;
 
-      // Ye line sabse zaruri hai: Ye bot ko yaad dilayegi ki is message par reply aane par firse AI ko bulana hai
-      if (typeof global.client !== 'undefined' && global.client.handleReply) {
+      // Sabse important part: Framework ko batana ki is message par reply aane par 'handleReply' chalana hai
+      if (global.client && global.client.handleReply) {
         global.client.handleReply.push({
-          name: "cutiee", // Jo module ka naam upar config mein hai
+          name: commandName,
           messageID: info.messageID,
           author: senderID
         });
@@ -72,6 +68,6 @@ async function handleAIResponse(api, threadID, messageID, senderID, prompt) {
 
   } catch (error) {
     console.error(error);
-    return api.sendMessage("❌ Network mein lafda hai baby, thoda ruko... 😘", threadID, messageID);
+    return api.sendMessage("❌ Network issue hai baby, thoda ruko... 😘", threadID, messageID);
   }
-  }
+}

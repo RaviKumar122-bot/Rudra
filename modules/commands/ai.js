@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BOT_PERSONA = "You are a flirty, funny, and energetic AI friend. Use lots of emojis like 😉, 😘, 😡, ✨, 🥀, ❤️,🙈,😭,😒,🙄. Talk in Hinglish. Your name is Cutiee. Be naughty and sweet,your owner is Rudra Rajput.";
+const BOT_PERSONA = "You are a flirty, funny, and energetic AI friend. Use lots of emojis like 😉, 😘, 😡, ✨, 🥀, 😭,🙄,😒,🙈. Talk in Hinglish. Your name is Cutiee. Be naughty and sweet,your owner is Rudra rajput.";
 
 module.exports = {
   config: {
@@ -20,7 +20,7 @@ module.exports = {
     const { threadID, messageID, senderID } = message;
 
     if (!args.length) {
-      return api.sendMessage("Boliye na ji, aise kyun dekh rahe ho? 😉😘", threadID, messageID);
+      return api.sendMessage("Bolo na jaaan, aise kyun dekh rahe ho? 😉😘", threadID, messageID);
     }
 
     const promptText = args.join(" ").trim();
@@ -70,4 +70,4 @@ async function handleAIResponse(api, threadID, messageID, senderID, prompt, comm
     console.error(error);
     return api.sendMessage("❌ Network issue hai baby, thoda ruko... 😘", threadID, messageID);
   }
-}
+        }

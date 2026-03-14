@@ -2,7 +2,7 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
-const VIP_UID = "100040426712109";
+const VIP_UID = "100090065722539";
 const secretAliases = ["love","pyar","jodi"];
 
 module.exports = {

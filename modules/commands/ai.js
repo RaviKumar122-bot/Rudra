@@ -1,73 +1,156 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
-const BOT_PERSONA = "You are a flirty, funny, and energetic AI friend. Use lots of emojis like 😉, 😘, 😡, ✨, 🥀, 😭,🙄,😒,🙈. Talk in Hinglish. Your name is Cutiee. Be naughty and sweet,your owner is Rudra rajput.";
+// --- CONFIGURATION ---
+const GROQ_API_KEY = "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"; 
 
+const HISTORY_FILE = path.join(__dirname, "temporary", "juhi_history.json");
+const HISTORY_LIMIT = 10;
+const MODEL_NAME = "llama-3.3-70b-versatile"; 
+
+// --- UPDATED CHARACTER (Short & Sweet) ---
+const SYSTEM_PROMPT = `Tumhara naam cutiee hai.
+Tum ek cute, naughty aur flirty girlfriend ki tarah baat karti ho.
+Tumhe lambe answers dena pasand nahi hai, tum hamesha 1-2 line mein chota jawab deti ho.
+Tum Hinglish use karti ho.
+Tum gussa nahi karti, bas mazak aur masti karti ho.
+Agar koi flirting kare to tum bhi flirt karo, par limit mein.
+Over-react mat karna, normal insaan ki tarah baat karna.tum massanger ke sare emoji use kar sakti jo sentence ke hidab se.`;
+
+// --- HELPER FUNCTIONS ---
+function ensureHistoryFile() {
+  const dir = path.dirname(HISTORY_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(HISTORY_FILE)) fs.writeFileSync(HISTORY_FILE, JSON.stringify({}), 'utf8');
+}
+
+function readHistory() {
+  ensureHistoryFile();
+  try { return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8')); } catch { return {}; }
+}
+
+function writeHistory(data) {
+  try { fs.writeFileSync(HISTORY_FILE, JSON.stringify(data, null, 2), 'utf8'); } catch (err) {}
+}
+
+function getUserHistory(userID) {
+  const allHistory = readHistory();
+  return Array.isArray(allHistory[userID]) ? allHistory[userID] : [];
+}
+
+function saveUserHistory(userID, newHistory) {
+  const allHistory = readHistory();
+  allHistory[userID] = newHistory.slice(-HISTORY_LIMIT);
+  writeHistory(allHistory);
+}
+
+// --- API FUNCTION ---
+async function getGroqReply(userID, prompt) {
+  const history = getUserHistory(userID);
+  const messages = [{ role: "system", content: SYSTEM_PROMPT }, ...history, { role: "user", content: prompt }];
+
+  try {
+    const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
+      model: MODEL_NAME,
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 200, // Tokens kam kar diye taki answer chota aaye
+      top_p: 1,
+      stream: false
+    }, { headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" } });
+
+    const botReply = response.data.choices[0].message.content;
+    saveUserHistory(userID, [...history, { role: "user", content: prompt }, { role: "assistant", content: botReply }]);
+    return botReply;
+
+  } catch (error) {
+    const msg = error.response ? error.response.data.error.message : error.message;
+    throw new Error(msg);
+  }
+}
+
+// --- MAIN COMMAND ---
 module.exports = {
   config: {
     name: "cutiee",
-    aliases: ["ai", "bot"],
-    description: "Talk to Cutiee with continuous conversation",
-    usage: "cutiee <message> or reply to bot",
+    aliases: ["to chat", "ai"],
+    description: "Chat with Juhi (Fixed Reply)",
+    usage: "{prefix}juhi <message>",
     credit: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
     hasPrefix: false,
-    permission: 'PUBLIC',
-    cooldown: 2,
+    permission: 0,
+    cooldown: 5,
     category: 'AI'
   },
 
-  // Ye function tab chalega jab aap pehli baar 'cutiee' likhenge
   run: async function({ api, message, args }) {
     const { threadID, messageID, senderID } = message;
+    const prompt = args.join(" ").trim();
 
-    if (!args.length) {
-      return api.sendMessage("Bolo na jaaan, aise kyun dekh rahe ho? 😉😘", threadID, messageID);
+    if (!prompt) return api.sendMessage("Bolo babu? Kuch kahoge? 😘", threadID, messageID);
+
+    api.setMessageReaction("💋", messageID, () => {}, true);
+
+    try {
+      const reply = await getGroqReply(senderID, prompt);
+      
+      api.sendMessage(reply, threadID, (err, info) => {
+        if (err) return;
+
+        // --- FIXED REPLY HANDLER (Based on your snippet) ---
+        const repliesList = global.client.replies.get(threadID) || [];
+        repliesList.push({
+          command: module.exports.config.name,
+          messageID: info.messageID,
+          expectedSender: senderID,
+          data: {}
+        });
+        global.client.replies.set(threadID, repliesList);
+        
+      }, messageID);
+
+    } catch (error) {
+      api.sendMessage(`❌ Error: ${error.message}`, threadID, messageID);
     }
-
-    const promptText = args.join(" ").trim();
-    return await handleAIResponse(api, threadID, messageID, senderID, promptText, this.config.name);
   },
 
-  // Ye function tab chalega jab aap bot ke reply par bina 'cutiee' likhe reply karenge
-  handleReply: async function({ api, message, handleReply }) {
-    const { threadID, messageID, senderID, body } = message;
-    if (!body) return;
+  handleReply: async function({ api, message }) {
+    // Check if valid reply
+    if (!message.messageReply) return;
 
-    // Yahan hum dobara AI ko call kar rahe hain bina naam ki zarurat ke
-    return await handleAIResponse(api, threadID, messageID, senderID, body, this.config.name);
+    const { threadID, messageID, senderID, body } = message;
+    const prompt = body.trim();
+    if (!prompt) return;
+
+    // Check agar reply sahi user se hai
+    const replies = global.client.replies.get(threadID) || [];
+    const replyData = replies.find(r => r.messageID === message.messageReply.messageID);
+    
+    if (!replyData || replyData.expectedSender !== senderID) return;
+
+    api.setMessageReaction("❤️", messageID, () => {}, true);
+
+    try {
+      const reply = await getGroqReply(senderID, prompt);
+
+      api.sendMessage(reply, threadID, (err, info) => {
+        if (err) return;
+
+        // Chain continue rakhne ke liye naya reply register karo
+        const updatedReplies = global.client.replies.get(threadID) || [];
+        updatedReplies.push({
+          command: module.exports.config.name,
+          messageID: info.messageID,
+          expectedSender: senderID,
+          data: {}
+        });
+        global.client.replies.set(threadID, updatedReplies);
+
+      }, messageID);
+
+    } catch (error) {
+      api.sendMessage(`❌ Error: ${error.message}`, threadID, messageID);
+    }
   }
 };
-
-async function handleAIResponse(api, threadID, messageID, senderID, prompt, commandName) {
-  try {
-    api.setMessageReaction("⏳", messageID, () => {}, true);
-
-    const apiKey = "apim_PHNPYM8mq_Mpav9ue8sGJ6MNPAEvKNKJ13Uq1YZGcX4";
-
-    const res = await axios.post("https://priyanshuapi.xyz/api/runner/priyanshu-ai", {
-      prompt: `${BOT_PERSONA}\n\nUser: ${prompt}`,
-      model: "priyanshu-ai",
-      persona: "flirty"
-    }, {
-      headers: { 'Authorization': `Bearer ${apiKey}` }
-    });
-
-    const aiResponse = res.data?.data?.choices?.[0]?.message?.content || "Oh sorry baby, kuch samajh nahi aaya! 😉";
-
-    return api.sendMessage(`✨ ${aiResponse}`, threadID, (err, info) => {
-      if (err) return;
-
-      // Sabse important part: Framework ko batana ki is message par reply aane par 'handleReply' chalana hai
-      if (global.client && global.client.handleReply) {
-        global.client.handleReply.push({
-          name: commandName,
-          messageID: info.messageID,
-          author: senderID
-        });
-      }
-    }, messageID);
-
-  } catch (error) {
-    console.error(error);
-    return api.sendMessage("❌ Network issue hai baby, thoda ruko... 😘", threadID, messageID);
-  }
-        }

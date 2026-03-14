@@ -39,6 +39,7 @@ module.exports.run = async function ({ api, message, args }) {
         const isUrl = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)(\/|$)/.test(input);
 
         if (!isUrl) {
+
             searchingMessageInfo = await api.sendMessage(`🔍 Searching for: ${input}...`, threadID, messageID);
 
             const searchResult = await ytSearch(input);
@@ -127,7 +128,6 @@ module.exports.run = async function ({ api, message, args }) {
         try {
 
             const headResponse = await axios.head(downloadUrl);
-
             const contentLength = headResponse.headers["content-length"];
 
             if (contentLength && parseInt(contentLength) > 30 * 1024 * 1024) {
@@ -135,7 +135,6 @@ module.exports.run = async function ({ api, message, args }) {
                 if (searchingMessageInfo) api.unsendMessage(searchingMessageInfo.messageID);
 
                 return api.sendMessage("❌ File size exceeds 30MB limit.", threadID, messageID);
-
             }
 
         } catch (headError) {}
@@ -144,10 +143,9 @@ module.exports.run = async function ({ api, message, args }) {
             ? new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(videoDetails.views)
             : "N/A";
 
-
         let infoMsg =
 `╔══════════════════════╗
-     🎧 𝗠𝗨𝗦𝗜𝗖 𝗖𝗔𝗥𝗗
+   🎧 𝗠𝗨𝗦𝗜𝗖 𝗖𝗔𝗥𝗗
 ╚══════════════════════╝
 
 🎵 𝗧𝗶𝘁𝗹𝗲: ${finalTitle}
@@ -165,19 +163,23 @@ module.exports.run = async function ({ api, message, args }) {
 ⏳ 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱𝗶𝗻𝗴 𝗔𝘂𝗱𝗶𝗼...
 `;
 
-        api.sendMessage(
-            {
-                body: infoMsg,
-                attachment: await global.utils.getStreamFromURL(thumbnail)
-            },
-            threadID,
-            () => {
-                if (searchingMessageInfo) {
-                    api.unsendMessage(searchingMessageInfo.messageID);
-                }
-            }
-        );
+        const thumbStream = await axios({
+            url: thumbnail,
+            method: "GET",
+            responseType: "stream"
+        });
 
+        api.sendMessage(
+        {
+            body: infoMsg,
+            attachment: thumbStream.data
+        },
+        threadID,
+        () => {
+            if (searchingMessageInfo) {
+                api.unsendMessage(searchingMessageInfo.messageID);
+            }
+        });
 
         const tempDir = path.join(__dirname, "tempsr");
 
@@ -186,7 +188,6 @@ module.exports.run = async function ({ api, message, args }) {
         }
 
         const safeFilename = (filename || `${Date.now()}.mp3`).replace(/[^a-zA-Z0-9.-]/g, "_");
-
         const filePath = path.join(tempDir, safeFilename);
 
         const writer = fs.createWriteStream(filePath);
@@ -207,7 +208,7 @@ module.exports.run = async function ({ api, message, args }) {
 
                     api.sendMessage("❌ Download failed (empty file). Please try again.", threadID, messageID);
 
-                    return fs.unlink(filePath, () => { });
+                    return fs.unlink(filePath, () => {});
                 }
 
                 api.sendMessage(
@@ -222,8 +223,7 @@ module.exports.run = async function ({ api, message, args }) {
                             api.sendMessage("❌ Failed to send audio file.", threadID, messageID);
                         }
 
-                        fs.unlink(filePath, () => { });
-
+                        fs.unlink(filePath, () => {});
                     }
                 );
             });
@@ -234,8 +234,7 @@ module.exports.run = async function ({ api, message, args }) {
 
             api.sendMessage("❌ Failed to download the file.", threadID, messageID);
 
-            fs.unlink(filePath, () => { });
-
+            fs.unlink(filePath, () => {});
         });
 
     } catch (error) {

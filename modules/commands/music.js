@@ -40,29 +40,19 @@ let loadingMsg;
 
 try {
 
-// single loading message
 loadingMsg = await api.sendMessage("🎧 Processing your music...\n\n15% ⏳", threadID);
 
-// edit function
-async function editProgress(text){
-try{
-api.editMessage(text, loadingMsg.messageID);
-}catch{}
-}
+await new Promise(r => setTimeout(r,700));
+api.sendMessage("45% 🔍 Searching song...", threadID, null, loadingMsg.messageID);
 
-// progress updates
-await new Promise(r=>setTimeout(r,700));
-await editProgress("🎧 Processing your music...\n\n45% 🔍 Searching song...");
+await new Promise(r => setTimeout(r,700));
+api.sendMessage("60% ⚙️ Fetching data...", threadID, null, loadingMsg.messageID);
 
-await new Promise(r=>setTimeout(r,700));
-await editProgress("🎧 Processing your music...\n\n60% ⚙️ Fetching data...");
+await new Promise(r => setTimeout(r,700));
+api.sendMessage("80% 📥 Preparing download...", threadID, null, loadingMsg.messageID);
 
-await new Promise(r=>setTimeout(r,700));
-await editProgress("🎧 Processing your music...\n\n80% 📥 Preparing download...");
-
-await new Promise(r=>setTimeout(r,700));
-await editProgress("🎧 Processing your music...\n\n100% ✅ Complete");
-
+await new Promise(r => setTimeout(r,700));
+api.sendMessage("100% ✅ Complete", threadID, null, loadingMsg.messageID);
 
 const isUrl = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)(\/|$)/.test(input);
 
@@ -125,13 +115,21 @@ if(videoIdMatch){
 thumbnail = `https://img.youtube.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
 }
 
-let infoMsg = `🎵 ${finalTitle}\n`;
+let infoMsg = `
+╔══════『 🎧 MUSIC 』══════╗
 
-if (videoDetails.duration) infoMsg += `⏱ ${videoDetails.duration}\n`;
-if (videoDetails.author) infoMsg += `🎤 ${videoDetails.author}\n`;
-if (videoDetails.views) infoMsg += `👁 ${formattedViews}\n`;
+🎵 ${finalTitle}
 
-infoMsg += `⬇ Downloading your track...`;
+⏱ ${videoDetails.duration || "N/A"}  |  👁 ${formattedViews}
+
+▰▰▰▰▰▰▰▰▰▰
+
+𝐎𝐖𝐍𝐄𝐑 : 𝐑𝐔𝐃𝐑𝐀 𝐑𝐀𝐉𝐏𝐔𝐓
+
+⬇ Downloading your track...
+
+╚════════════════════╝
+`;
 
 api.sendMessage({
 body:infoMsg,
@@ -179,8 +177,7 @@ attachment:fs.createReadStream(filePath),
 
 fs.unlink(filePath,()=>{});
 
-// remove loading message after song
-if(loadingMsg) api.unsendMessage(loadingMsg.messageID);
+if (loadingMsg) api.unsendMessage(loadingMsg.messageID);
 
 });
 
@@ -206,4 +203,3 @@ api.sendMessage("❌ An error occurred while processing your request.",threadID,
 
 };
 ```
-              

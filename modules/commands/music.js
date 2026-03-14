@@ -144,9 +144,9 @@ module.exports.run = async function ({ api, message, args }) {
             : "N/A";
 
         let infoMsg =
-`╔══════════════════════╗
+`╔══════════════════
    🎧 𝗠𝗨𝗦𝗜𝗖 𝗖𝗔𝗥𝗗
-╚══════════════════════╝
+╚══════════════════
 
 🎵 𝗧𝗶𝘁𝗹𝗲: ${finalTitle}
 👤 𝗔𝗿𝘁𝗶𝘀𝘁: ${videoDetails.author || "Unknown"}
@@ -157,7 +157,7 @@ module.exports.run = async function ({ api, message, args }) {
 🔗 𝗦𝗼𝘂𝗿𝗰𝗲: ${videoUrl}
 
 ━━━━━━━━━━━━━━━━━━
-👑 𝗢𝗪𝗡𝗘𝗥: 𝗥𝗨𝗗𝗥𝗔 𝗥𝗔𝗝𝗣𝗨𝗧
+👑𝗢𝗪𝗡𝗘𝗥: 𝗥𝗨𝗗𝗥𝗔 𝗥𝗔𝗝𝗣𝗨𝗧
 ━━━━━━━━━━━━━━━━━━
 
 ⏳ 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱𝗶𝗻𝗴 𝗔𝘂𝗱𝗶𝗼...

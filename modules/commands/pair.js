@@ -56,8 +56,8 @@ module.exports = {
       let name2;
       let forcedMatch = false;
 
-      // 🔥 CHEAT MODE
       if (cheatMode) {
+
         try {
 
           const history = await api.getThreadHistory(threadID, 20);
@@ -69,7 +69,9 @@ module.exports = {
               msg.messageReactions &&
               msg.messageReactions.some(r => r.userID == senderID)
             ) {
+
               if (msg.senderID !== senderID) {
+
                 id2 = msg.senderID;
 
                 const info = await api.getUserInfo(id2);
@@ -82,9 +84,9 @@ module.exports = {
           }
 
         } catch(e){}
+
       }
 
-      // 🎲 NORMAL RANDOM MATCH
       if (!id2) {
 
         let candidates = allUsers.filter(u => u.id !== senderID && u.id !== botID);
@@ -107,7 +109,6 @@ module.exports = {
 
       }
 
-      // ❤️ MATCH PERCENT
       let tile;
 
       if (forcedMatch) {
@@ -165,7 +166,6 @@ module.exports = {
         quote = q[Math.floor(Math.random()*q.length)];
       }
 
-      // 🖼 BACKGROUND
       const backgrounds = [
         "https://i.postimg.cc/Hncn7FzP/Picsart-24-07-14-02-01-33-567.jpg",
         "https://i.postimg.cc/tgts9cNG/Picsart-24-07-14-11-17-37-603.jpg",
@@ -188,7 +188,6 @@ module.exports = {
       fs.writeFileSync(pathAvt1,Buffer.from(resAvt1.data));
       fs.writeFileSync(pathAvt2,Buffer.from(resAvt2.data));
 
-      // 🎨 DRAW
       const img = await loadImage(pathImg);
       const av1 = await loadImage(pathAvt1);
       const av2 = await loadImage(pathAvt2);
@@ -201,6 +200,19 @@ module.exports = {
       ctx.drawImage(av1,100,150,300,300);
       ctx.drawImage(av2,900,150,300,300);
 
+      // 🔥 NAME DRAW
+      ctx.font = "bold 30px Sans";
+      ctx.fillStyle = "#000000";
+      ctx.textAlign = "center";
+      ctx.shadowColor = "rgba(255,255,255,0.8)";
+      ctx.shadowBlur = 4;
+
+      let name1Short = name1.length > 18 ? name1.slice(0,18)+"..." : name1;
+      let name2Short = name2.length > 18 ? name2.slice(0,18)+"..." : name2;
+
+      ctx.fillText(name1Short,250,470);
+      ctx.fillText(name2Short,1050,470);
+
       fs.writeFileSync(pathImg,cvs.toBuffer());
 
       const bodyMsg =
@@ -212,7 +224,7 @@ ${name1} 💖 ${name2}
 
 💬 "${quote}"
 
-Credits: Vikas Rajput`;
+Credits: Rudra Rajput`;
 
       return api.sendMessage({
 
@@ -231,14 +243,5 @@ Credits: Vikas Rajput`;
           if(fs.existsSync(p)) fs.unlinkSync(p)
         })
 
-      },messageID);
-
-    } catch(err){
-
-      return api.sendMessage(`❌ System Error: ${err.message}`,threadID,messageID)
-
-    }
-
-  }
-};
+      },mes
       

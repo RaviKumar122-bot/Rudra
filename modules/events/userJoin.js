@@ -121,7 +121,7 @@ Thank you for adding me to the group!`,
         const user = addedParticipants[0];
 
         welcomeMessage =
-`╭━━━〔 ✦ 𝑾𝑬𝑳𝑪𝑶𝑴𝑬 ✦ 〕━━━╮
+`╭━━━〔  𝑾𝑬𝑳𝑪𝑶𝑴𝑬  〕━━━╮
 
 ✧ 𝐍𝐞𝐰 𝐌𝐞𝐦𝐛𝐞𝐫 𝐉𝐨𝐢𝐧𝐞𝐝
 
@@ -157,7 +157,7 @@ Thank you for adding me to the group!`,
       } else {
 
         welcomeMessage =
-`╭━━━✦ 𝑮𝑹𝑶𝑼𝑷 𝑾𝑬𝑳𝑪𝑶𝑴𝑬 ✦━━━╮
+`╭━━━✦𝑮𝑹𝑶𝑼𝑷 𝑾𝑬𝑳𝑪𝑶𝑴𝑬✦━━━╮
 
 🎉 𝐍𝐞𝐰 𝐌𝐞𝐦𝐛𝐞𝐫𝐬 𝐉𝐨𝐢𝐧𝐞𝐝
 

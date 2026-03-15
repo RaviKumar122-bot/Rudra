@@ -34,7 +34,7 @@ module.exports = {
       const canvas = require("canvas");
       const { loadImage, createCanvas } = canvas;
 
-      api.sendMessage("🔍 Matching wait...👀", threadID, (err, info) => {
+      api.sendMessage("🔍 Matching pair...👀", threadID, (err, info) => {
         setTimeout(() => api.unsendMessage(info.messageID), 3000);
       }, messageID);
 
@@ -177,4 +177,65 @@ module.exports = {
 
         axios.get(rdBg,{responseType:"arraybuffer"}),
 
-        axios.get(`https://graph.facebook.com/${senderID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,{responseType:"arr
+        axios.get(`https://graph.facebook.com/${senderID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,{responseType:"arraybuffer"}),
+
+        axios.get(`https://graph.facebook.com/${id2}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,{responseType:"arraybuffer"})
+
+      ]);
+
+      fs.writeFileSync(pathImg,Buffer.from(resBg.data));
+      fs.writeFileSync(pathAvt1,Buffer.from(resAvt1.data));
+      fs.writeFileSync(pathAvt2,Buffer.from(resAvt2.data));
+
+      // 🎨 DRAW
+      const img = await loadImage(pathImg);
+      const av1 = await loadImage(pathAvt1);
+      const av2 = await loadImage(pathAvt2);
+
+      const cvs = createCanvas(img.width,img.height);
+      const ctx = cvs.getContext("2d");
+
+      ctx.drawImage(img,0,0,cvs.width,cvs.height);
+
+      ctx.drawImage(av1,100,150,300,300);
+      ctx.drawImage(av2,900,150,300,300);
+
+      fs.writeFileSync(pathImg,cvs.toBuffer());
+
+      const bodyMsg =
+`🤍 ◁𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡▷ 🤍
+
+${name1} 💖 ${name2}
+
+📊 Match: ${tile}%
+
+💬 "${quote}"`;
+
+      return api.sendMessage({
+
+        body: bodyMsg,
+
+        mentions:[
+          {tag:name1,id:senderID},
+          {tag:name2,id:id2}
+        ],
+
+        attachment: fs.createReadStream(pathImg)
+
+      },threadID,()=>{
+
+        [pathImg,pathAvt1,pathAvt2].forEach(p=>{
+          if(fs.existsSync(p)) fs.unlinkSync(p)
+        })
+
+      },messageID);
+
+    } catch(err){
+
+      return api.sendMessage(`❌ System Error: ${err.message}`,threadID,messageID)
+
+    }
+
+  }
+};
+          

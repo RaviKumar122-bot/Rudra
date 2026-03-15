@@ -34,7 +34,7 @@ module.exports = {
       const canvas = require("canvas");
       const { loadImage, createCanvas } = canvas;
 
-      api.sendMessage("🔍 Matching wait...", threadID, (err, info) => {
+      api.sendMessage("🔍 Matching wait...👀", threadID, (err, info) => {
         setTimeout(() => api.unsendMessage(info.messageID), 3000);
       }, messageID);
 
@@ -56,8 +56,8 @@ module.exports = {
       let name2;
       let forcedMatch = false;
 
+      // 🔥 CHEAT MODE
       if (cheatMode) {
-
         try {
 
           const history = await api.getThreadHistory(threadID, 20);
@@ -69,9 +69,7 @@ module.exports = {
               msg.messageReactions &&
               msg.messageReactions.some(r => r.userID == senderID)
             ) {
-
               if (msg.senderID !== senderID) {
-
                 id2 = msg.senderID;
 
                 const info = await api.getUserInfo(id2);
@@ -84,9 +82,9 @@ module.exports = {
           }
 
         } catch(e){}
-
       }
 
+      // 🎲 NORMAL RANDOM MATCH
       if (!id2) {
 
         let candidates = allUsers.filter(u => u.id !== senderID && u.id !== botID);
@@ -109,6 +107,7 @@ module.exports = {
 
       }
 
+      // ❤️ MATCH PERCENT
       let tile;
 
       if (forcedMatch) {
@@ -166,10 +165,10 @@ module.exports = {
         quote = q[Math.floor(Math.random()*q.length)];
       }
 
+      // 🖼 BACKGROUND
       const backgrounds = [
         "https://i.postimg.cc/Hncn7FzP/Picsart-24-07-14-02-01-33-567.jpg",
-        "https://i.postimg.cc/tgts9cNG/Picsart-24-07-14-11-17-37-603.jpg",
-        "https://i.postimg.cc/Qd8TqTdy/Picsart-24-07-13-22-50-27-001.jpg"
+        "https://i.postimg.cc/tgts9cNG/Picsart-24-07-14-11-17-37-603.jpg"
       ];
 
       const rdBg = backgrounds[Math.floor(Math.random()*backgrounds.length)];
@@ -178,70 +177,4 @@ module.exports = {
 
         axios.get(rdBg,{responseType:"arraybuffer"}),
 
-        axios.get(`https://graph.facebook.com/${senderID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,{responseType:"arraybuffer"}),
-
-        axios.get(`https://graph.facebook.com/${id2}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,{responseType:"arraybuffer"})
-
-      ]);
-
-      fs.writeFileSync(pathImg,Buffer.from(resBg.data));
-      fs.writeFileSync(pathAvt1,Buffer.from(resAvt1.data));
-      fs.writeFileSync(pathAvt2,Buffer.from(resAvt2.data));
-
-      const img = await loadImage(pathImg);
-      const av1 = await loadImage(pathAvt1);
-      const av2 = await loadImage(pathAvt2);
-
-      const cvs = createCanvas(img.width,img.height);
-      const ctx = cvs.getContext("2d");
-
-      ctx.drawImage(img,0,0,cvs.width,cvs.height);
-
-      ctx.drawImage(av1,100,150,300,300);
-      ctx.drawImage(av2,900,150,300,300);
-
-      // 🔥 NAME DRAW
-      ctx.font = "bold 30px Sans";
-      ctx.fillStyle = "#000000";
-      ctx.textAlign = "center";
-      ctx.shadowColor = "rgba(255,255,255,0.8)";
-      ctx.shadowBlur = 4;
-
-      let name1Short = name1.length > 18 ? name1.slice(0,18)+"..." : name1;
-      let name2Short = name2.length > 18 ? name2.slice(0,18)+"..." : name2;
-
-      ctx.fillText(name1Short,250,470);
-      ctx.fillText(name2Short,1050,470);
-
-      fs.writeFileSync(pathImg,cvs.toBuffer());
-
-      const bodyMsg =
-`🤍 ◁𝗖𝗢𝗡𝗚𝗥𝗔𝗧𝗨𝗟𝗔𝗧𝗜𝗢𝗡▷ 🤍
-
-${name1} 💖 ${name2}
-
-📊 Match: ${tile}%
-
-💬 "${quote}"
-
-Credits: Rudra Rajput`;
-
-      return api.sendMessage({
-
-        body: bodyMsg,
-
-        mentions:[
-          {tag:name1,id:senderID},
-          {tag:name2,id:id2}
-        ],
-
-        attachment: fs.createReadStream(pathImg)
-
-      },threadID,()=>{
-
-        [pathImg,pathAvt1,pathAvt2].forEach(p=>{
-          if(fs.existsSync(p)) fs.unlinkSync(p)
-        })
-
-      },mes
-      
+        axios.get(`https://graph.facebook.com/${senderID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,{responseType:"arr

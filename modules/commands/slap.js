@@ -8,7 +8,7 @@ module.exports = {
     aliases: [],
     description: "Slap someone with image 😆",
     usages: "{prefix}slap @user",
-    credit: "𝐑𝐔𝐃𝐑𝐀'𝐒 𝐁𝐎𝐓",
+    credit: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
     category: "FUN",
     hasPrefix: true,
     permission: "PUBLIC",

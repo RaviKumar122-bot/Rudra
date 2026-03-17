@@ -60,7 +60,7 @@ module.exports = {
     const ownerName = ownerData?.name || 'Owner';
 
     const statusMessage =
-`╭━━━〔 𝐑𝐔𝐃𝐑𝐀'𝐒 𝐁𝐎𝐓 〕━━━╮
+`╭━━━〔𝐑𝐔𝐃𝐑𝐀'𝐒 𝐁𝐎𝐓〕━━━╮
 
 ✨ 𝐁𝐎𝐓 𝐒𝐓𝐀𝐓𝐔𝐒 ✨
 
@@ -79,7 +79,7 @@ module.exports = {
 
 🟢 𝐒𝐭𝐚𝐭𝐮𝐬 : 𝐎𝐧𝐥𝐢𝐧𝐞 & 𝐑𝐮𝐧𝐧𝐢𝐧𝐠 🚀
 
-╰━━━━━━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━━━╯`;
 
     const mentions = [
       {

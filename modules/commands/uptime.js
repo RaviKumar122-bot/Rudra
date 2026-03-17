@@ -16,31 +16,20 @@ module.exports = {
     cooldowns: 5
   },
 
-  /**
-   * Command execution
-   * @param {Object} options - Options object
-   * @param {Object} options.api - Facebook API instance
-   * @param {Object} options.message - Message object
-   * @param {Array<string>} options.args - Command arguments
-   */
   run: async function ({ api, message, args }) {
     const { threadID, messageID } = message;
 
-    // Use server module's formatUptime if available, otherwise calculate manually
     let uptimeStr;
     if (global.server && global.server.formatUptime) {
       uptimeStr = global.server.formatUptime();
     } else {
-      // Calculate uptime
       const uptimeMs = process.uptime() * 1000;
 
-      // Format uptime
       const seconds = Math.floor((uptimeMs / 1000) % 60);
       const minutes = Math.floor((uptimeMs / (1000 * 60)) % 60);
       const hours = Math.floor((uptimeMs / (1000 * 60 * 60)) % 24);
       const days = Math.floor(uptimeMs / (1000 * 60 * 60 * 24));
 
-      // Create uptime string
       uptimeStr = '';
       if (days > 0) uptimeStr += `${days} day${days > 1 ? 's' : ''}, `;
       if (hours > 0) uptimeStr += `${hours} hour${hours > 1 ? 's' : ''}, `;
@@ -48,26 +37,12 @@ module.exports = {
       uptimeStr += `${seconds} second${seconds !== 1 ? 's' : ''}`;
     }
 
-    // Get memory usage
     const memoryUsage = process.memoryUsage();
     const memoryUsedMB = Math.round(memoryUsage.rss / 1024 / 1024 * 100) / 100;
 
-    // Get bot info
     const botID = api.getCurrentUserID();
     const isRestarted = typeof global.isRestart !== 'undefined' && global.isRestart;
 
-    // Get server info
-    let serverInfo = '';
-    if (global.config.serverUrl) {
-      serverInfo = `\n🌐 Preview URL: ${global.config.serverUrl}`;
-    }
-
-    // Add Render URL if available
-    if (global.config.renderUrl) {
-      serverInfo += `\n🚀 Render URL: ${global.config.renderUrl}`;
-    }
-
-    // Count unique commands (exclude aliases)
     const uniqueCommands = new Set();
     for (const [key, cmd] of global.client.commands.entries()) {
       if (key === cmd.config.name) {
@@ -75,32 +50,37 @@ module.exports = {
       }
     }
 
-    // Count threads and users from database
     const totalThreads = await global.Thread.countDocuments();
     const totalUsers = await global.User.countDocuments();
 
-    // Get bot and owner data for names
     const ownerID = global.config.ownerID;
-    let botData = await global.User.findOne({ userID: botID });
     let ownerData = await global.User.findOne({ userID: ownerID });
-    const botName = botData?.name || 'Bot';
+
+    const botName = "𝐜𝐮𝐭𝐢𝐞𝐞👀❤️";
     const ownerName = ownerData?.name || 'Owner';
 
-    // Create status message with mentions
-    const statusMessage = `🤖 Bot Status 🤖\n\n` +
-      `🆔 Bot: ${botName}\n` +
-      `⏱️ Uptime: ${uptimeStr}\n` +
-      `🧠 Memory: ${memoryUsedMB} MB\n` +
-      `🔄 Restarted: ${isRestarted ? 'Yes' : 'No'}\n` +
-      `📊 Commands: ${uniqueCommands.size}\n` +
-      `📋 Events: ${global.client.events.size}\n` +
-      `👥 Total Users: ${totalUsers}\n` +
-      `💬 Total Threads: ${totalThreads}\n` +
-      `👑 Owner: ${ownerName}` +
-      `${serverInfo}\n` +
-      `\n🟢 Bot is online and operational!`;
+    const statusMessage =
+`╭━━━〔 𝐑𝐔𝐃𝐑𝐀'𝐒 𝐁𝐎𝐓 〕━━━╮
 
-    // Create mentions array
+✨ 𝐁𝐎𝐓 𝐒𝐓𝐀𝐓𝐔𝐒 ✨
+
+🤖 𝐁𝐨𝐭 : ${botName}
+⏱️ 𝐔𝐩𝐭𝐢𝐦𝐞 : ${uptimeStr}
+🧠 𝐌𝐞𝐦𝐨𝐫𝐲 : ${memoryUsedMB} MB
+🔄 𝐑𝐞𝐬𝐭𝐚𝐫𝐭𝐞𝐝 : ${isRestarted ? '𝐘𝐞𝐬' : '𝐍𝐨'}
+
+📊 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬 : ${uniqueCommands.size}
+📋 𝐄𝐯𝐞𝐧𝐭𝐬 : ${global.client.events.size}
+
+👥 𝐔𝐬𝐞𝐫𝐬 : ${totalUsers}
+💬 𝐆𝐫𝐨𝐮𝐩𝐬 : ${totalThreads}
+
+👑 𝐎𝐰𝐧𝐞𝐫 : ${ownerName}
+
+🟢 𝐒𝐭𝐚𝐭𝐮𝐬 : 𝐎𝐧𝐥𝐢𝐧𝐞 & 𝐑𝐮𝐧𝐧𝐢𝐧𝐠 🚀
+
+╰━━━━━━━━━━━━━━━━━━━━╯`;
+
     const mentions = [
       {
         tag: botName,
@@ -112,7 +92,6 @@ module.exports = {
       }
     ];
 
-    // Send status message with mentions
     return api.sendMessage({
       body: statusMessage,
       mentions: mentions

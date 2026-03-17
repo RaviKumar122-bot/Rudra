@@ -44,7 +44,7 @@ module.exports = {
       const msg =
 `╭━━━〔 𝐒𝐋𝐀𝐏 𝐀𝐓𝐓𝐀𝐂𝐊〕━━━╮
 
-💥 ${senderName} slapped ${mentionName} 😆
+💥 ${senderName} slapped ${mentionName} 😂
 
 ╰━━━━━━━━━━━━━━━━━━━╯`;
 

@@ -16,25 +16,16 @@ module.exports = {
   },
 
   run: async function ({ api, message, args }) {
-    const { threadID, messageID, senderID, mentions } = message;
+    const { threadID, messageID, senderID } = message;
 
-    let mentionID = null;
     let mentionName = null;
 
-    // Real mention
-    if (mentions && Object.keys(mentions).length > 0) {
-      mentionID = Object.keys(mentions)[0];
-      mentionName = mentions[mentionID];
-    }
-
-    // Fake @name support
-    else if (args.length > 0) {
+    // ✅ ONLY FAKE @NAME SUPPORT
+    if (args.length > 0) {
       let text = args.join(" ");
       text = text.replace(/^@/, "");
       mentionName = text;
-    }
-
-    else {
+    } else {
       return api.sendMessage(
         "⚠️ Kisi ka naam likh ke slap karo 😆",
         threadID,
@@ -49,23 +40,23 @@ module.exports = {
       senderName = user?.name || "Someone";
     } catch (e) {}
 
-    // 🔥 CRAZY RANDOM LINES
+    // 🔥 CRAZY RANDOM LINES (BOLD)
     const funnyLines = [
-      "💀 itna zor ka pada ki 5G se 2G pe aa gaya!",
-      "😂 gaal ne bola — bhai bas kar!",
-      "🔥 system hang ho gaya bechare ka!",
-      "🤣 thappad nahi earthquake tha!",
-      "⚡ hawa me 2 sec freeze ho gaya!",
-      "💢 dimaag reboot ho gaya turant!",
-      "😆 muh left gaya aur body right!",
-      "🥴 aankhon ke saamne tare ghoom gaye!",
-      "😈 respect uninstall successfully!",
-      "💥 seedha soul tak hit kiya!",
-      "🤣 network unstable ho gaya!",
-      "⚡ lagta hai update pending tha!",
-      "💀 ye thappad history me likha jayega!",
-      "😂 NASA bhi track nahi kar paya speed!",
-      "🔥 gravity bhi fail ho gayi iss slap pe!"
+      "💀 𝐢𝐭𝐧𝐚 𝐳𝐨𝐫 𝐤𝐚 𝐩𝐚𝐝𝐚 𝐤𝐢 5𝐆 𝐬𝐞 2𝐆 𝐩𝐞 𝐚𝐚 𝐠𝐚𝐲𝐚!",
+      "😂 𝐠𝐚𝐚𝐥 𝐧𝐞 𝐛𝐨𝐥𝐚 — 𝐛𝐡𝐚𝐢 𝐛𝐚𝐬 𝐤𝐚𝐫!",
+      "🔥 𝐬𝐲𝐬𝐭𝐞𝐦 𝐡𝐚𝐧𝐠 𝐡𝐨 𝐠𝐚𝐲𝐚 𝐛𝐞𝐜𝐡𝐚𝐫𝐞 𝐤𝐚!",
+      "🤣 𝐭𝐡𝐚𝐩𝐩𝐚𝐝 𝐧𝐚𝐡𝐢 𝐞𝐚𝐫𝐭𝐡𝐪𝐮𝐚𝐤𝐞 𝐭𝐡𝐚!",
+      "⚡ 𝐡𝐚𝐰𝐚 𝐦𝐞 2 𝐬𝐞𝐜 𝐟𝐫𝐞𝐞𝐳𝐞 𝐡𝐨 𝐠𝐚𝐲𝐚!",
+      "💢 𝐝𝐢𝐦𝐚𝐚𝐠 𝐫𝐞𝐛𝐨𝐨𝐭 𝐡𝐨 𝐠𝐚𝐲𝐚 𝐭𝐮𝐫𝐚𝐧𝐭!",
+      "😆 𝐦𝐮𝐡 𝐥𝐞𝐟𝐭 𝐠𝐚𝐲𝐚 𝐚𝐮𝐫 𝐛𝐨𝐝𝐲 𝐫𝐢𝐠𝐡𝐭!",
+      "🥴 𝐚𝐚𝐧𝐤𝐡𝐨𝐧 𝐤𝐞 𝐬𝐚𝐚𝐦𝐧𝐞 𝐭𝐚𝐫𝐞 𝐠𝐡𝐨𝐨𝐦 𝐠𝐚𝐲𝐞!",
+      "😈 𝐫𝐞𝐬𝐩𝐞𝐜𝐭 𝐮𝐧𝐢𝐧𝐬𝐭𝐚𝐥𝐥 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲!",
+      "💥 𝐬𝐞𝐞𝐝𝐡𝐚 𝐬𝐨𝐮𝐥 𝐭𝐚𝐤 𝐡𝐢𝐭 𝐤𝐢𝐲𝐚!",
+      "🤣 𝐧𝐞𝐭𝐰𝐨𝐫𝐤 𝐮𝐧𝐬𝐭𝐚𝐛𝐥𝐞 𝐡𝐨 𝐠𝐚𝐲𝐚!",
+      "⚡ 𝐥𝐚𝐠𝐭𝐚 𝐡𝐚𝐢 𝐮𝐩𝐝𝐚𝐭𝐞 𝐩𝐞𝐧𝐝𝐢𝐧𝐠 𝐭𝐡𝐚!",
+      "💀 𝐲𝐞 𝐭𝐡𝐚𝐩𝐩𝐚𝐝 𝐡𝐢𝐬𝐭𝐨𝐫𝐲 𝐦𝐞 𝐥𝐢𝐤𝐡𝐚 𝐣𝐚𝐲𝐞𝐠𝐚!",
+      "😂 𝐍𝐀𝐒𝐀 𝐛𝐡𝐢 𝐭𝐫𝐚𝐜𝐤 𝐧𝐚𝐡𝐢 𝐤𝐚𝐫 𝐩𝐚𝐲𝐚!",
+      "🔥 𝐠𝐫𝐚𝐯𝐢𝐭𝐲 𝐟𝐚𝐢𝐥 𝐡𝐨 𝐠𝐚𝐲𝐢 𝐢𝐬𝐬 𝐬𝐥𝐚𝐩 𝐩𝐞!"
     ];
 
     const randomLine = funnyLines[Math.floor(Math.random() * funnyLines.length)];
@@ -80,23 +71,17 @@ module.exports = {
       fs.writeFileSync(imgPath, Buffer.from(img, "utf-8"));
 
       const msg =
-`╭───〔 𝐒𝐋𝐀𝐏 💥 〕───╮
+`╭───〔 𝐒𝐋𝐀𝐏 👋 〕───╮
 
-💥 ${senderName} ne ${mentionName} ko thappad mara!
+😁 ${senderName} 😁 𝐧𝐞 😂 ${mentionName} 😂 𝐤𝐨 𝐭𝐡𝐚𝐩𝐩𝐚𝐝 𝐦𝐚𝐫𝐚!
 
 ${randomLine}
 
-╰──────────────────╯`;
+╰─────────────────╯`;
 
       return api.sendMessage({
         body: msg,
-        attachment: fs.createReadStream(imgPath),
-        mentions: mentionID ? [
-          {
-            tag: mentionName,
-            id: mentionID
-          }
-        ] : []
+        attachment: fs.createReadStream(imgPath)
       }, threadID, () => {
         fs.unlinkSync(imgPath);
       }, messageID);

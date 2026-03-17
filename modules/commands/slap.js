@@ -18,13 +18,30 @@ module.exports = {
   run: async function ({ api, message }) {
     const { threadID, messageID, senderID, mentions } = message;
 
-    if (!mentions || Object.keys(mentions).length === 0) {
-      return api.sendMessage("⚠️ Please mention someone to slap 😆", threadID, messageID);
+    let mentionID, mentionName;
+
+    // ✅ Method 1: Proper mention
+    if (mentions && Object.keys(mentions).length > 0) {
+      mentionID = Object.keys(mentions)[0];
+      mentionName = mentions[mentionID];
     }
 
-    const mentionID = Object.keys(mentions)[0];
-    const mentionName = mentions[mentionID];
+    // ✅ Method 2: Reply system (important fix)
+    else if (message.messageReply) {
+      mentionID = message.messageReply.senderID;
+      mentionName = message.messageReply.body || "User";
+    }
 
+    // ❌ No user found
+    else {
+      return api.sendMessage(
+        "⚠️ Please mention or reply to someone to slap 😆",
+        threadID,
+        messageID
+      );
+    }
+
+    // Get sender name
     let senderName = "Someone";
     try {
       const user = await global.User.findOne({ userID: senderID });
@@ -32,7 +49,7 @@ module.exports = {
     } catch (e) {}
 
     try {
-      // 🔥 API CALL (waifu.pics)
+      // 🔥 API CALL
       const res = await axios.get("https://api.waifu.pics/sfw/slap");
       const imageUrl = res.data.url;
 
@@ -42,11 +59,11 @@ module.exports = {
       fs.writeFileSync(imgPath, Buffer.from(img, "utf-8"));
 
       const msg =
-`╭━━━〔 𝐒𝐋𝐀𝐏 𝐀𝐓𝐓𝐀𝐂𝐊〕━━━╮
+`╭━━━〔𝐒𝐋𝐀𝐏 𝐀𝐓𝐓𝐀𝐂𝐊〕━━━╮
 
-💥 ${senderName} slapped ${mentionName} 😂
+💥 ${senderName} slapped ${mentionName} 😆
 
-╰━━━━━━━━━━━━━━━━━━━╯`;
+╰━━━━━━━━━━━━━━━━━━╯`;
 
       return api.sendMessage({
         body: msg,

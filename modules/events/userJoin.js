@@ -30,9 +30,7 @@ module.exports = {
 
         // 🔥 RANDOM IMAGE SYSTEM
         const botJoinImages = [
-          "https://i.imgur.com/abc1.png",
-          "https://i.imgur.com/abc2.png",
-          "https://i.imgur.com/abc3.png"
+          "https://i.postimg.cc/2Sk7DyKD/IMG-20260322-WA0000.jpg"
         ];
 
         const botJoinImage = botJoinImages[Math.floor(Math.random() * botJoinImages.length)];

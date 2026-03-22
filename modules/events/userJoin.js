@@ -21,83 +21,66 @@ module.exports = {
       }
 
       const addedParticipants = logMessageData.addedParticipants || [];
-
-      if (addedParticipants.length === 0) {
-        return;
-      }
+      if (addedParticipants.length === 0) return;
 
       const botAdded = addedParticipants.some(user => user.userFbId === global.client.botID);
 
+      // ================= BOT JOIN =================
       if (botAdded) {
-        global.logger.system(`Bot was added to thread ${threadID}`);
 
-        if (global.config.botNickname) {
+        // 🔥 RANDOM IMAGE SYSTEM
+        const botJoinImages = [
+          "https://i.imgur.com/abc1.png",
+          "https://i.imgur.com/abc2.png",
+          "https://i.imgur.com/abc3.png"
+        ];
+
+        const botJoinImage = botJoinImages[Math.floor(Math.random() * botJoinImages.length)];
+
+        let botMsg =
+`╭━━━〔 𝐀𝐂𝐓𝐈𝐕𝐀𝐓𝐄𝐃 〕━━━╮
+
+✨ 𝐇𝐞𝐥𝐥𝐨 𝐄𝐯𝐞𝐫𝐲𝐨𝐧𝐞 ✨
+
+➤ 𝐈'𝐦 CUTIEE
+➤ 𝐍𝐨𝐰 𝐀𝐜𝐭𝐢𝐯𝐞 𝐈𝐧 𝐓𝐡𝐢𝐬 𝐆𝐫𝐨𝐮𝐩
+
+➤𝐑𝐞𝐚𝐝𝐲 𝐓𝐨 𝐌𝐚𝐤𝐞 𝐂𝐡𝐚𝐭𝐢𝐧𝐠
+
+💎 𝐄𝐧𝐣𝐨𝐲 𝐏𝐫𝐞𝐦𝐢𝐮𝐦 𝐅𝐞𝐚𝐭𝐮𝐫𝐞𝐬
+
+👑𝐎𝐖𝐍𝐄𝐑 : 𝐑𝐔𝐃𝐑𝐀 𝐑𝐀𝐉𝐏𝐔𝐓
+
+╰━━━〔 ✦ 𝐄𝐍𝐉𝐎𝐘 ✦ 〕━━━╯`;
+
+        let botAttachment = [];
+
+        if (botJoinImage) {
           try {
-            await new Promise((resolve, reject) => {
-              api.changeNickname(global.config.botNickname, threadID, global.client.botID, (err) => {
-                if (err) reject(err);
-                else resolve();
-              });
-            }).catch(() => { });
-          } catch (nicknameError) {}
+            const axios = require("axios");
+            const img = await axios.get(botJoinImage, { responseType: "arraybuffer" });
+
+            const imgPath = path.join(__dirname, `bot_join_${Date.now()}.png`);
+            fs.writeFileSync(imgPath, Buffer.from(img.data, "binary"));
+
+            botAttachment.push(fs.createReadStream(imgPath));
+
+            setTimeout(() => {
+              if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+            }, 30000);
+
+          } catch (e) {
+            global.logger.error("Bot join image error:", e);
+          }
         }
 
-        try {
-          const threadInfo = await new Promise((resolve, reject) => {
-            api.getThreadInfo(threadID, (err, info) => {
-              if (err) return reject(err);
-              resolve(info);
-            });
-          });
-
-          const participants = [];
-
-          const userInfoArray = Array.isArray(threadInfo.userInfo)
-            ? threadInfo.userInfo
-            : (threadInfo.participantIDs && Array.isArray(threadInfo.participantIDs))
-              ? threadInfo.participantIDs.map(id => ({ id, name: 'Facebook User' }))
-              : [];
-
-          for (const participant of userInfoArray) {
-            if (!participant || !participant.id) continue;
-            if (participant.id === global.client.botID) continue;
-
-            let nickname = null;
-            if (threadInfo.nicknames && threadInfo.nicknames[participant.id]) {
-              nickname = threadInfo.nicknames[participant.id];
-            }
-
-            participants.push({
-              id: participant.id,
-              name: participant.name || 'Facebook User',
-              nickname: nickname,
-              gender: participant.gender || null,
-              vanity: participant.vanity && participant.vanity.trim() !== '' ? participant.vanity : null
-            });
-
-            await global.handleCreateDatabase?.createUser(participant.id, participant.name || 'Facebook User');
-          }
-
-          await global.controllers.thread.createOrUpdateThread(
-            threadInfo.threadID,
-            {
-              threadName: threadInfo.threadName || 'Unnamed Group',
-              users: participants
-            }
-          );
-
-        } catch (dbError) {}
-
-        return global.api.sendMessage(
-          `👋 Hello! I'm ${global.config.botNickname || 'a Facebook Messenger Bot'}
-
-Use ${global.config.prefix}help to see available commands.
-
-Thank you for adding me to the group!`,
-          threadID
-        );
+        return global.api.sendMessage({
+          body: botMsg,
+          attachment: botAttachment
+        }, threadID);
       }
 
+      // ================= USER JOIN =================
       for (const participant of addedParticipants) {
         await global.handleCreateDatabase.createUser(participant.userFbId, participant.fullName);
 
@@ -113,11 +96,10 @@ Thank you for adding me to the group!`,
         threadName = info.threadName || "Group";
       } catch (e) {}
 
-      let welcomeMessage = '👋 Welcome to the group!';
+      let welcomeMessage = '👋 Welcome!';
       let attachment = [];
 
       if (addedParticipants.length === 1) {
-
         const user = addedParticipants[0];
 
         welcomeMessage =
@@ -130,48 +112,37 @@ Thank you for adding me to the group!`,
 
 ✦ 𝐖𝐞'𝐫𝐞 𝐠𝐥𝐚𝐝 𝐭𝐨 𝐡𝐚𝐯𝐞 𝐲𝐨𝐮 𝐡𝐞𝐫𝐞!
 
-✨ 𝐄𝐧𝐣𝐨𝐲 𝐜𝐡𝐚𝐭𝐢𝐧𝐠 𝐚𝐧𝐝 𝐡𝐚𝐯𝐞 𝐟𝐮𝐧 ✨
-
-⚡ 𝐓𝐨 𝐬𝐞𝐞 𝐛𝐨𝐭 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬
-➤ ${global.config.prefix}help
+✨ 𝐄𝐧𝐣𝐨𝐲 𝐜𝐡𝐚𝐭𝐢𝐧𝐠 ✨
 
 ╰━━━〔 ✦ 𝑬𝑵𝑱𝑶𝒀 ✦ 〕━━━╯`;
 
         try {
-          const avatarUrl = `https://graph.facebook.com/${user.userFbId}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+          const avatarUrl = `https://graph.facebook.com/${user.userFbId}/picture?height=720&width=720`;
           const imageBuffer = await generateWelcomeImage(user.fullName, threadName, avatarUrl);
 
-          const imagePath = path.join(__dirname, `welcome_${user.userFbId}_${Date.now()}.png`);
-
+          const imagePath = path.join(__dirname, `welcome_${Date.now()}.png`);
           fs.writeFileSync(imagePath, imageBuffer);
+
           attachment.push(fs.createReadStream(imagePath));
 
           setTimeout(() => {
             if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
           }, 30000);
 
-        } catch (imgErr) {
-          global.logger.error("Error generating welcome image:", imgErr);
-        }
-
+        } catch (e) {}
       } else {
-
         welcomeMessage =
-`╭━━━✦𝑮𝑹𝑶𝑼𝑷 𝑾𝑬𝑳𝑪𝑶𝑴𝑬✦━━━╮
+`╭━━━𝑮𝑹𝑶𝑼𝑷 𝑾𝑬𝑳𝑪𝑶𝑴𝑬━━━╮
 
 🎉 𝐍𝐞𝐰 𝐌𝐞𝐦𝐛𝐞𝐫𝐬 𝐉𝐨𝐢𝐧𝐞𝐝
 
-${addedParticipants.map(user => `✧ ${user.fullName}`).join('\n')}
+${addedParticipants.map(u => `✧ ${u.fullName}`).join('\n')}
 
 ➤ 𝐆𝐫𝐨𝐮𝐩 : ${threadName}
 
 ✨ 𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐭𝐨 𝐭𝐡𝐞 𝐟𝐚𝐦𝐢𝐥𝐲 ✨
 
-⚡ 𝐔𝐬𝐞 ${global.config.prefix}help
-𝐭𝐨 𝐬𝐞𝐞 𝐚𝐥𝐥 𝐛𝐨𝐭 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬
-
-╰━━━ 〔 ✦ 𝑬𝑵𝑱𝑶𝒀 ✦ 〕 ━━━╯`;
-
+╰━━━〔 ✦ 𝑬𝑵𝑱𝑶𝒀 ✦ 〕━━━╯`;
       }
 
       await global.api.sendMessage({
@@ -179,46 +150,8 @@ ${addedParticipants.map(user => `✧ ${user.fullName}`).join('\n')}
         attachment: attachment
       }, threadID);
 
-      try {
-
-        let threadInfo = null;
-
-        try {
-          threadInfo = await new Promise((resolve, reject) => {
-            api.getThreadInfo(threadID, (err, info) => {
-              if (err) return reject(err);
-              resolve(info);
-            });
-          });
-        } catch (threadInfoError) {}
-
-        for (const participant of addedParticipants) {
-
-          if (participant.userFbId === global.client.botID) continue;
-
-          let userInfo = null;
-
-          if (threadInfo && threadInfo.userInfo && Array.isArray(threadInfo.userInfo)) {
-            userInfo = threadInfo.userInfo.find(u => u.id === participant.userFbId);
-          }
-
-          const nickname = threadInfo?.nicknames?.[participant.userFbId] || null;
-
-          await global.controllers.thread.addUserToThread(
-            threadID,
-            participant.userFbId,
-            participant.fullName,
-            nickname,
-            userInfo?.gender || null,
-            userInfo?.vanity && userInfo.vanity.trim() !== '' ? userInfo.vanity : null
-          );
-        }
-
-      } catch (dbError) {}
-
     } catch (error) {
       global.logger.error('Error in userJoin event:', error.message);
     }
   }
 };
-                                                          

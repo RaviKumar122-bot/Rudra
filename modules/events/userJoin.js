@@ -28,6 +28,25 @@ module.exports = {
       // ================= BOT JOIN =================
       if (botAdded) {
 
+  // 👇 YE PART MUST HAI
+  if (global.config.botNickname) {
+    try {
+      await new Promise((resolve, reject) => {
+        api.changeNickname(
+          global.config.botNickname,
+          threadID,
+          global.client.botID,
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
+  // 👇 fir baaki system (random image etc.)
+
         // 🔥 RANDOM IMAGE SYSTEM
         const botJoinImages = [
           "https://i.postimg.cc/2Sk7DyKD/IMG-20260322-WA0000.jpg"

@@ -134,7 +134,7 @@ module.exports = {
 ╰━━━〔 ✦ 𝑬𝑵𝑱𝑶𝒀 ✦ 〕━━━╯`;
 
         try {
-          const avatarUrl = `https://graph.facebook.com/${user.userFbId}/picture?height=720&width=720`;
+          const avatarUrl = `https://graph.facebook.com/${user.userFbId}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
           const imageBuffer = await generateWelcomeImage(user.fullName, threadName, avatarUrl);
 
           const imagePath = path.join(__dirname, `welcome_${Date.now()}.png`);

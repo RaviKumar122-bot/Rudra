@@ -8,6 +8,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
+const cron = require('node-cron'); // ✅ ADDED
 
 // Set global variables
 global.client = {};
@@ -47,6 +48,16 @@ mongoose.connect(global.config.mongoURI, {
   console.log('[CONSOLE] MongoDB connection successful');
   logger.database('Connected to MongoDB successfully');
   
+  // ✅ AUTO SHAYRI SCHEDULER ADDED
+  cron.schedule("0 * * * *", async () => {
+    try {
+      const autoShayri = require('./events/autoshayri');
+      await autoShayri.run({ api: global.api });
+    } catch (e) {
+      console.log("AutoShayri Scheduler Error:", e);
+    }
+  });
+
   // Start HTTP server for preview
   const server = require('./utils/server');
   server.startServer();
@@ -66,13 +77,11 @@ process.on('uncaughtException', (err) => {
   global.logger.error(err);
   console.error('❌ Uncaught Exception:');
   console.error(err);
-  // Don't exit the process to keep the bot running
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   const timestamp = new Date().toISOString();
   
-  // Enhanced logging with highlighting
   if (global.logger && global.logger.error) {
     global.logger.error('🚨 UNHANDLED PROMISE REJECTION DETECTED 🚨');
     global.logger.error('📍 Location:', promise);
@@ -80,15 +89,12 @@ process.on('unhandledRejection', (reason, promise) => {
     global.logger.error('⏰ Timestamp:', timestamp);
   }
   
-  // Create highlighted error box in console
   console.error('\n' + '🚨'.repeat(25));
   console.error('❌ UNHANDLED PROMISE REJECTION DETECTED');
   console.error('📍 Promise:', promise);
   console.error('🔥 Reason:', reason);
   console.error('⏰ Time:', timestamp);
   console.error('🚨'.repeat(25) + '\n');
-  
-  // Don't exit the process to keep the bot running
 });
 
 logger.system('Bot initialization complete');

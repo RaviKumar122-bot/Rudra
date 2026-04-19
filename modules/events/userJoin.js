@@ -55,7 +55,7 @@ module.exports = {
         const botJoinImage = botJoinImages[Math.floor(Math.random() * botJoinImages.length)];
 
         let botMsg =
-`╭━━━〔 𝐀𝐂𝐓𝐈𝐕𝐀𝐓𝐄𝐃 〕━━━╮
+`╭━━━〔𝐀𝐂𝐓𝐈𝐕𝐀𝐓𝐄𝐃〕━━━╮
 
 ✨ 𝐇𝐞𝐥𝐥𝐨 𝐄𝐯𝐞𝐫𝐲𝐨𝐧𝐞 ✨
 
@@ -68,7 +68,7 @@ module.exports = {
 
 👑𝐎𝐖𝐍𝐄𝐑 : 𝐑𝐔𝐃𝐑𝐀 𝐑𝐀𝐉𝐏𝐔𝐓
 
-╰━━━〔 ✦ 𝐄𝐍𝐉𝐎𝐘 ✦ 〕━━━╯`;
+╰━━━〔  𝐄𝐍𝐉𝐎𝐘  〕━━━╯`;
 
         let botAttachment = [];
 
@@ -120,7 +120,7 @@ module.exports = {
         const user = addedParticipants[0];
 
         welcomeMessage =
-`╭━━━〔  𝑾𝑬𝑳𝑪𝑶𝑴𝑬  〕━━━╮
+`╭━━━〔𝑾𝑬𝑳𝑪𝑶𝑴𝑬〕━━━╮
 
 ✧ 𝐍𝐞𝐰 𝐌𝐞𝐦𝐛𝐞𝐫 𝐉𝐨𝐢𝐧𝐞𝐝
 
@@ -131,7 +131,7 @@ module.exports = {
 
 ✨ 𝐄𝐧𝐣𝐨𝐲 𝐜𝐡𝐚𝐭𝐢𝐧𝐠 ✨
 
-╰━━━〔 ✦ 𝑬𝑵𝑱𝑶𝒀 ✦ 〕━━━╯`;
+╰━━━〔  𝑬𝑵𝑱𝑶𝒀  〕━━━╯`;
 
         try {
           const avatarUrl = `https://graph.facebook.com/${user.userFbId}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
@@ -149,7 +149,7 @@ module.exports = {
         } catch (e) {}
       } else {
         welcomeMessage =
-`╭━━━𝑮𝑹𝑶𝑼𝑷 𝑾𝑬𝑳𝑪𝑶𝑴𝑬━━━╮
+`╭━━𝑮𝑹𝑶𝑼𝑷 𝑾𝑬𝑳𝑪𝑶𝑴𝑬━━╮
 
 🎉 𝐍𝐞𝐰 𝐌𝐞𝐦𝐛𝐞𝐫𝐬 𝐉𝐨𝐢𝐧𝐞𝐝
 

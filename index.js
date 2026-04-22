@@ -48,10 +48,10 @@ mongoose.connect(global.config.mongoURI, {
   console.log('[CONSOLE] MongoDB connection successful');
   logger.database('Connected to MongoDB successfully');
   
-  // ✅ AUTO SHAYRI SCHEDULER ADDED
+  // ✅ AUTO SHAYRI SCHEDULER ADDED (PATH FIXED ONLY)
   cron.schedule("0 * * * *", async () => {
     try {
-      const autoShayri = require('./events/autoshayri');
+      const autoShayri = require('./modules/events/autoshayri'); // ✅ FIXED PATH
       await autoShayri.run({ api: global.api });
     } catch (e) {
       console.log("AutoShayri Scheduler Error:", e);

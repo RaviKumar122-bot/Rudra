@@ -44,7 +44,7 @@ function loadReplies() {
 function pickReply({ senderID, gender }) {
   const replies = loadReplies();
   let category = "default";
-  if (senderID === "100037743553265") category = "100037743553265";
+  if (senderID === "100090065722539") category = "100090065722539";
   else if (gender === 2 || gender?.toString().toUpperCase() === "MALE") category = "MALE";
   else if (gender === 1 || gender?.toString().toUpperCase() === "FEMALE") category = "FEMALE";
 

@@ -51,7 +51,7 @@ mongoose.connect(global.config.mongoURI, {
   // ✅ AUTO SHAYRI SCHEDULER ADDED (PATH FIXED ONLY)
   cron.schedule("0 * * * *", async () => {
     try {
-      const autoShayri = require('./modules/events/autoshayri.js'); // ✅ FIXED PATH
+      const autoShayri = require('./modules/events/autoshayari'); // ✅ FIXED PATH
       await autoShayri.run({ api: global.api });
     } catch (e) {
       console.log("AutoShayri Scheduler Error:", e);

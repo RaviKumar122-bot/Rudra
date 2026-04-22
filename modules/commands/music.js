@@ -144,23 +144,16 @@ module.exports.run = async function ({ api, message, args }) {
             : "N/A";
 
         let infoMsg =
-`╔══════════════════
+`╔═════════════════
    🎧 𝗠𝗨𝗦𝗜𝗖 𝗖𝗔𝗥𝗗
-╚══════════════════
-
+╚═════════════════
 🎵 𝗧𝗶𝘁𝗹𝗲: ${finalTitle}
 👤 𝗔𝗿𝘁𝗶𝘀𝘁: ${videoDetails.author || "Unknown"}
 ⏱ 𝗗𝘂𝗿𝗮𝘁𝗶𝗼𝗻: ${videoDetails.duration || "N/A"}
 👀 𝗩𝗶𝗲𝘄𝘀: ${formattedViews}
 📅 𝗨𝗽𝗹𝗼𝗮𝗱𝗲𝗱: ${videoDetails.ago || "N/A"}
 
-🔗 𝗦𝗼𝘂𝗿𝗰𝗲: ${videoUrl}
-
 ━━━━━━━━━━━━━━━━━━
-👑𝗢𝗪𝗡𝗘𝗥: 𝗥𝗨𝗗𝗥𝗔 𝗥𝗔𝗝𝗣𝗨𝗧
-━━━━━━━━━━━━━━━━━━
-
-⏳ 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱𝗶𝗻𝗴 𝗔𝘂𝗱𝗶𝗼...
 `;
 
         const thumbStream = await axios({

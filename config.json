@@ -1,15 +1,15 @@
 {
   "mongoURI": "mongodb+srv://aloknarendra236_db_user:puSbxrSF19JQHG1k@cluster0.z8m1nv4.mongodb.net/?appName=Cluster0",
-  "ownerID": "100090065722539",
+  "ownerID": "61586663160943",
   "adminIDs": [
-    "100037743553265",
+    "61586663160943",
     "ADMIN_ID_2"
   ],
   "supportIDs": [
-    "100090065722539",
+    "61586663160943",
     "SUPPORT_ID_2"
   ],
-  "adminInboxThreadID": "100090065722539",
+  "adminInboxThreadID": "61586663160943",
   "prefix": ".",
   "fcaOptions": {
     "forceLogin": false,
@@ -24,7 +24,7 @@
     "autoReconnect": true,
     "userAgent": "Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 CrKey/1.54.250320"
   },
-  "botNickname": "𝐂𝐮𝐭𝐢𝐞𝐞👀❤️",
+  "botNickname": "ʀǟʋɨʀǟʝ ʊʀʄ ʀǟʝᏦɨռɢ🍒🍒🍒🌶️👀❤️",
   "commandEnabled": true,
   "eventEnabled": true,
   "announceImageChange": true,
